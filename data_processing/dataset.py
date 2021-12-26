@@ -8,7 +8,7 @@ import os
 from utils import get_tf_feature, read_audio
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
-
+from tqdm import tqdm
 
 np.random.seed(999)
 tf.random.set_seed(999)
@@ -126,9 +126,9 @@ class Dataset:
 
     def create_tf_record(self, *, prefix, subset_size, parallel=True):
         counter = 0
-        p = multiprocessing.Pool(multiprocessing.cpu_count())
+        p = multiprocessing.Pool(min(4, multiprocessing.cpu_count()))
 
-        for i in range(0, len(self.clean_filenames), subset_size):
+        for i in tqdm(range(0, len(self.clean_filenames), subset_size)):
 
             tfrecord_filename = './records/' + prefix + '_' + str(counter) + '.tfrecords'
 
@@ -142,11 +142,12 @@ class Dataset:
 
             print(f"Processing files from: {i} to {i + subset_size}")
             if parallel:
+                print("Using 4 CPUs")
                 out = p.map(self.parallel_audio_processing, clean_filenames_sublist)
             else:
                 out = [self.parallel_audio_processing(filename) for filename in clean_filenames_sublist]
 
-            for o in out:
+            for o in tqdm(out):
                 noise_stft_magnitude = o[0]
                 clean_stft_magnitude = o[1]
                 noise_stft_phase = o[2]
