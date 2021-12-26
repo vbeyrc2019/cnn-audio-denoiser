@@ -145,7 +145,7 @@ class Dataset:
                 print("Using 4 CPUs")
                 out = p.map(self.parallel_audio_processing, clean_filenames_sublist)
             else:
-                out = [self.parallel_audio_processing(filename) for filename in clean_filenames_sublist]
+                out = [self.parallel_audio_processing(filename) for filename in tqdm(clean_filenames_sublist)]
 
             for o in tqdm(out):
                 noise_stft_magnitude = o[0]
